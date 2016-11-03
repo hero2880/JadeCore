@@ -244,7 +244,7 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
     ByteBuffer bitBuffer;
     ByteBuffer dataBuffer;
 
-    // Sended before SMSG_CHAR_ENUM
+    // Sended before SMSG_ENUM_CHARACTERS_RESULT
     // must be procceded before BuildEnumData, because of unsetting bosted character guid
     if (m_charBooster->GetCurrentAction() == CHARACTER_BOOST_APPLIED)
         m_charBooster->HandleCharacterBoost();
@@ -288,7 +288,7 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
         bitBuffer.FlushBits();
     }
 
-    WorldPacket data(SMSG_CHAR_ENUM, 7 + bitBuffer.size() + dataBuffer.size());
+    WorldPacket data(SMSG_ENUM_CHARACTERS_RESULT, 7 + bitBuffer.size() + dataBuffer.size());
 
     data.append(bitBuffer);
 
@@ -297,7 +297,7 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
     
     SendPacket(&data);
 
-    // Sended after SMSG_CHAR_ENUM
+    // Sended after SMSG_ENUM_CHARACTERS_RESULT
     if (m_charBooster->GetCurrentAction() == CHARACTER_BOOST_ITEMS)
         m_charBooster->HandleCharacterBoost();
 }
@@ -860,7 +860,7 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleLoadScreenOpcode(WorldPacket& recvPacket)
 {
-    TC_LOG_DEBUG("general", "WORLD: Recvd CMSG_LOAD_SCREEN");
+    TC_LOG_DEBUG("general", "WORLD: Recvd CMSG_LOADING_SCREEN_NOTIFY");
     uint32 mapID;
 
     recvPacket >> mapID;
@@ -939,7 +939,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder, PreparedQueryResu
     LoadAccountData(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_ACCOUNT_DATA), PER_CHARACTER_CACHE_MASK);
     SendAccountDataTimes(PER_CHARACTER_CACHE_MASK);
 
-    pCurrChar->SendFeatureSystemStatus();
+    bool feedbackSystem = sWorld->getBoolConfig(CONFIG_TICKETS_FEEDBACK_SYSTEM_ENABLED);
+    bool excessiveWarning = false;
 
     // Send MOTD
     {
@@ -1012,7 +1013,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder, PreparedQueryResu
 
     HotfixData const& hotfix = sObjectMgr->GetHotfixData();
 
-    data.Initialize(SMSG_HOTFIX_INFO);
+    data.Initialize(SMSG_HOTFIX_NOTIFY_BLOB);
     data.WriteBits(hotfix.size(), 20);
     data.FlushBits();
 

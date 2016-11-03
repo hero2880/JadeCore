@@ -1472,7 +1472,7 @@ void WorldSession::HandleCancelTempEnchantmentOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleItemRefundInfoRequest(WorldPacket& recvData)
 {
-    TC_LOG_DEBUG("network", "WORLD: CMSG_ITEM_REFUND_INFO");
+    TC_LOG_DEBUG("network", "WORLD: CMSG_GET_ITEM_PURCHASE_DATA");
 
     ObjectGuid guid;
 
@@ -1491,7 +1491,7 @@ void WorldSession::HandleItemRefundInfoRequest(WorldPacket& recvData)
         return;
     }
 
-    GetPlayer()->SendRefundInfo(item);
+    GetPlayer()->RefundItem(item);
 }
 
 void WorldSession::HandleItemRefund(WorldPacket &recvData)
